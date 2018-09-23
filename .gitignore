@@ -1,2 +1,5 @@
 #Ignore my virtual environment files
 recipeTracker_env/
+
+#Ignore my IDE files
+.idea/
