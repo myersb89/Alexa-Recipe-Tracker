@@ -8,5 +8,5 @@ from ask_sdk_model.ui import SimpleCard
 
 sb = SkillBuilder()
 
-def recipeTracker():
+def hello():
     return "hello world"

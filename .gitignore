@@ -3,3 +3,6 @@ recipeTracker_env/
 
 #Ignore my IDE files
 .idea/
+
+#Ignore pycache
+__pycache__/
