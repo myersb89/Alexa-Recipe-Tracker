@@ -9,7 +9,7 @@ from ask_sdk_model.ui import SimpleCard
 sb = SkillBuilder()
 
 def hello():
-    test = "this is a test2"
+    test = "this is a test3"
     return "hello world"
 
 class LaunchRequestHandler(AbstractRequestHandler):
