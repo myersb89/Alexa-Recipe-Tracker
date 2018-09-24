@@ -24,7 +24,7 @@ pipeline {
                 bat '''REM Build the .zip file
                     xcopy /y recipeTracker.py venv\\Lib\\site-packages
                     mkdir builds
-                    "C:\\Program Files\\7-Zip\\7z.exe" a -tzip "builds\\recipeTracker.zip" ".\\venv\\Lib\\site-packages\*"'''
+                    "C:\\Program Files\\7-Zip\\7z.exe" a -tzip "builds\\recipeTracker.zip" ".\\venv\\Lib\\site-packages\\*"'''
                     
                 withAWS(region:'us-east-1',credentials:'1000') {
                     s3Upload(file:'builds/recipetracker.zip', bucket:'myersb89-recipetracker', path:'recipetracker.zip')
