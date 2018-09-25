@@ -10,7 +10,7 @@ pipeline {
             steps {
                 bat '''REM Build the requirements in a virtual environment
                     virtualenv venv
-                    REM .\\venv\\Scripts\\pip.exe install -r requirements.txt''' 
+                    .\\venv\\Scripts\\pip.exe install -r requirements.txt''' 
             }
         }
         stage('Test') { 
