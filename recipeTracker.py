@@ -1,12 +1,19 @@
-from ask_sdk_core.skill_builder import SkillBuilder
+import os
+from ask_sdk_core.skill_builder import StandardSkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
+import ask_sdk_dynamodb
 
-sb = SkillBuilder()
+skill_persistence_table = os.environ["skill_persistence_table"]
+
+sb = StandardSkillBuilder(
+    table_name=skill_persistence_table, auto_create_table=False,
+    partition_keygen=ask_sdk_dynamodb.partition_keygen.user_id_partition_keygen
+)
 
 def hello():
     test = "this is a test6"
@@ -28,7 +35,9 @@ class NewRecipeIntentHandler(AbstractRequestHandler):
         return is_intent_name("NewRecipeIntent")(handler_input)
 
     def handle(self, handler_input):
-        speech_text = "This functionality is not yet implemented. Please try again later"
+        attr = handler_input.attributes_manager.persistent_attributes
+        attr['recipe'] = 'Beef Stew'
+        speech_text = "Ok, what should this recipe be called?"
 
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
