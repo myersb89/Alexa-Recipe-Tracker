@@ -14,6 +14,10 @@ import jsonpickle
 skill_persistence_table = 'recipedb'
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
 
+RECIPE_SLOT = 'recipe'
+SESSION_KEY = 'current_recipe'
+PERSISTENCE_KEY = 'recipe_list'
+
 sb = StandardSkillBuilder(
     table_name=skill_persistence_table, auto_create_table=False,
     partition_keygen=ask_sdk_dynamodb.partition_keygen.user_id_partition_keygen,
@@ -40,10 +44,6 @@ class NewRecipeIntentHandler(AbstractRequestHandler):
         return is_intent_name("NewRecipeIntent")(handler_input)
 
     def handle(self, handler_input):
-        #Create new recipe object and save it to dynamodb.
-        persistence_attr = handler_input.attributes_manager.persistent_attributes
-        persistence_attr['recipe'] = jsonpickle.encode(recipe('Beef Stew'))
-        handler_input.attributes_manager.save_persistent_attributes()
 
         speech_text = "Ok, what should this recipe be called?"
 
@@ -57,11 +57,18 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
         return is_intent_name("NewRecipeProvidedIntent")(handler_input)
 
     def handle(self, handler_input):
-        #Get the recipe name provided from the slot. Create a recipe object and save to session.
-        slots = handler_input.request_envelope.request.intent.slots
-        recipe_name = slots['recipe'].value
         session_attr = handler_input.attributes_manager.session_attributes
-        session_attr['current_recipe'] = jsonpickle.encode(recipe(recipe_name))
+
+        # check if we already have a recipe in the session. If yes, store to database before creating new.
+        if SESSION_KEY in session_attr:
+            persistence_attr = handler_input.attributes_manager.persistent_attributes
+            persistence_attr[PERSISTENCE_KEY] = session_attr[SESSION_KEY]
+            handler_input.attributes_manager.save_persistent_attributes()
+
+        # Get the recipe name provided from the slot. Create a recipe object and save to session.
+        slots = handler_input.request_envelope.request.intent.slots
+        recipe_name = slots[RECIPE_SLOT].value
+        session_attr[SESSION_KEY] = jsonpickle.encode(recipe(recipe_name))
 
         speech_text = "Recipe has been created. Say 'add ingredient' to add an ingredient to the recipe."
 
