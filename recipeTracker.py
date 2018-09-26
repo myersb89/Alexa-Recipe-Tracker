@@ -12,7 +12,7 @@ import jsonpickle
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1') #, endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
 
 sb = StandardSkillBuilder(
     table_name=skill_persistence_table, auto_create_table=False,
@@ -46,6 +46,24 @@ class NewRecipeIntentHandler(AbstractRequestHandler):
         handler_input.attributes_manager.save_persistent_attributes()
 
         speech_text = "Ok, what should this recipe be called?"
+
+        handler_input.response_builder.speak(speech_text).set_card(
+            SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+            True)
+        return handler_input.response_builder.response
+
+class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("NewRecipeProvidedIntent")(handler_input)
+
+    def handle(self, handler_input):
+        #Get the recipe name provided from the slot. Create a recipe object and save to session.
+        slots = handler_input.request_envelope.request.intent.slots
+        recipe_name = slots['recipe'].value
+        session_attr = handler_input.attributes_manager.session_attributes
+        session_attr['current_recipe'] = jsonpickle.encode(recipe(recipe_name))
+
+        speech_text = "Recipe has been created. Say 'add ingredient' to add an ingredient to the recipe."
 
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
@@ -101,6 +119,7 @@ sb.add_request_handler(CancelAndStopIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
 
 sb.add_request_handler(NewRecipeIntentHandler())
+sb.add_request_handler(NewRecipeProvidedIntentHandler())
 
 sb.add_exception_handler(AllExceptionHandler())
 

@@ -25,3 +25,17 @@ def createNewRecipeContext():
     with open("samples\\newreciperequest.json") as json_file:
         data = json.load(json_file)
         return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=context.Context)
+
+def createNewRecipeProvidedRequest():
+    with open("samples\\newrecipeprovidedrequest.json") as json_file:
+        data = json.load(json_file)
+        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=request_envelope.RequestEnvelope)
+
+def createNewRecipeProvidedContext():
+    with open("samples\\newrecipeprovidedrequest.json") as json_file:
+        data = json.load(json_file)
+        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=context.Context)
+
+#TO do
+#getSsmlFromResponse
+#getSessionAttrFromResponse

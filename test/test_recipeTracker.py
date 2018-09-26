@@ -23,3 +23,8 @@ def test_newRecipe():
     response = my_skill.invoke(testinput,testcontext)
     assert "Ok, what should this recipe be called" in response.to_str()
 
+def test_newRecipeProvided():
+    testinput = requestHelper.createNewRecipeProvidedRequest()
+    testcontext = requestHelper.createNewRecipeProvidedContext()
+    response = my_skill.invoke(testinput,testcontext)
+    assert "has been created" in response.to_str()
