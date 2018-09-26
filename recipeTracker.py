@@ -12,7 +12,7 @@ import jsonpickle
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
 
 RECIPE_SLOT = 'recipe'
 SESSION_KEY = 'current_recipe'
@@ -59,32 +59,41 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
 
         session_attr = handler_input.attributes_manager.session_attributes
         persistence_attr = handler_input.attributes_manager.persistent_attributes
-       #existing_recipe_list = None
-        cur_recipe = None
+        existing_recipe_list = None
 
-        #set recipe list and current recipe if we have them
-        #if PERSISTENCE_KEY in persistence_attr:
-        #    existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+        #check if recipe already exists in db
+        if PERSISTENCE_KEY in persistence_attr:
+            existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+            for i in existing_recipe_list:
+                item = jsonpickle.decode(i)
+                if item.title == recipe_name:
+                    speech_text = "That recipe already exists."
+                    handler_input.response_builder.speak(speech_text).set_card(
+                        SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+                        False)
+                    return handler_input.response_builder.response
+
+        #if we have a recipe in session
         if SESSION_KEY in session_attr:
             cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
-        if cur_recipe != None and cur_recipe.title == recipe_name:
-            speech_text = "That recipe already exists."
-            handler_input.response_builder.speak(speech_text).set_card(
-                SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
-                False)
-            return handler_input.response_builder.response
 
-        # check if we already have a recipe in the session. If yes, store to database before creating new.
-        if SESSION_KEY in session_attr:
-            #there's already a recipe list for this user. add to the list otherwise create
-            if PERSISTENCE_KEY in persistence_attr:
-                existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
-                existing_recipe_list.append(session_attr[SESSION_KEY])
-                persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
+            #check if it's the same as we are trying to add
+            if cur_recipe.title == recipe_name:
+                speech_text = "That recipe already exists."
+                handler_input.response_builder.speak(speech_text).set_card(
+                    SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+                    False)
+                return handler_input.response_builder.response
+            #if it's not, save current recipe to database
             else:
-                new_recipe_list = [session_attr[SESSION_KEY]]
-                persistence_attr[PERSISTENCE_KEY] = new_recipe_list
-            handler_input.attributes_manager.save_persistent_attributes()
+                # there's already a recipe list for this user. add to the list otherwise create
+                if PERSISTENCE_KEY in persistence_attr:
+                    existing_recipe_list.append(session_attr[SESSION_KEY])
+                    persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
+                else:
+                    new_recipe_list = [session_attr[SESSION_KEY]]
+                    persistence_attr[PERSISTENCE_KEY] = new_recipe_list
+                handler_input.attributes_manager.save_persistent_attributes()
 
         #save recipe to session as the current recipe
         session_attr[SESSION_KEY] = jsonpickle.encode(recipe(recipe_name))
@@ -112,6 +121,19 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.CancelIntent")(handler_input) or is_intent_name("AMAZON.StopIntent")(handler_input)
 
     def handle(self, handler_input):
+        #save the recipe in session to database on exit
+        session_attr = handler_input.attributes_manager.session_attributes
+        if SESSION_KEY in session_attr:
+            persistence_attr = handler_input.attributes_manager.persistent_attributes
+            if PERSISTENCE_KEY in persistence_attr:
+                existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+                existing_recipe_list.append(session_attr[SESSION_KEY])
+                persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
+            else:
+                new_recipe_list = [session_attr[SESSION_KEY]]
+                persistence_attr[PERSISTENCE_KEY] = new_recipe_list
+            handler_input.attributes_manager.save_persistent_attributes()
+
         speech_text = "Goodbye!"
 
         handler_input.response_builder.speak(speech_text).set_card(

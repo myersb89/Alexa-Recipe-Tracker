@@ -15,7 +15,7 @@ def requestBuilder(request_type, attributes = None, intent_name = None, slot_nam
         session["attributes"] = {}
 
     else:
-        session["attributes"] = {"current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": []}, \"title\": \"Mac and cheese\"}"}
+        session["attributes"] = {"current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": []}, \"title\": \"" + attributes + "\"}"}
     session["user"] = {"userId": userid}
     request = {}
     request["locale"] = "en-US"

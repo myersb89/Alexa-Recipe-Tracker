@@ -23,12 +23,35 @@ def test_newRecipeProvided():
     response = my_skill.invoke(testinput,testcontext)
     assert "has been created" in response.to_str()
 
-def test_newRecipeProvidedAlreadyExists():
+def test_stopNoSession():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AMAZON.StopIntent")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "Goodbye" in response.to_str()
+
+def test_stopWithSession():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AMAZON.StopIntent", attributes="Beef Stew")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "Goodbye" in response.to_str()
+
+def test_newRecipeProvidedAlreadyExistsInSession():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slot_name="recipe", slot_value="Mac and cheese")
     response = my_skill.invoke(testinput,testcontext)
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", attributes="Mac and cheese",
                                                           intent_name="NewRecipeProvidedIntent", slot_name="recipe",
                                                           slot_value="Mac and cheese")
-    print(testinput)
     response = my_skill.invoke(testinput, testcontext)
     assert "That recipe already exists" in response.to_str()
+
+def test_newRecipeProvidedAlreadyExistsInDb():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AMAZON.StopIntent", attributes="Pizza")
+    response = my_skill.invoke(testinput, testcontext)
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="NewRecipeProvidedIntent", slot_name="recipe",
+                                                          slot_value="Pizza")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "That recipe already exists" in response.to_str()
+
+#test_newRecipeProvidedAlreadyExistsInDb()
