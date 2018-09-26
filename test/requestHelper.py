@@ -6,35 +6,29 @@ import json
 sb = SkillBuilder()
 skill_obj = sb.create()
 
-def createLaunchRequest():
-    with open("samples\\launchrequest.json") as json_file:
-        data = json.load(json_file)
-        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=request_envelope.RequestEnvelope)
+def requestBuilder(request_type, intent_name = None, slot_name = None, slot_value = None, userid = "amzn1.ask.account.[unique-value-here]"):
+    #input: userid, request type, session attributes
+    session = {}
+    session["new"] = True
+    session["sessionId"] = "amzn1.echo-api.session.[unique-value-here]"
+    session["attributes"] = {}
+    session["user"] = {"userId": userid}
+    request = {}
+    request["locale"] = "en-US"
+    request["timestamp"] = "2016-10-27T18:21:44Z"
+    request["type"] = request_type
+    request["requestId"] = "amzn1.echo-api.request.[unique-value-here]"
+    if intent_name != None:
+        request["intent"] = {"name": intent_name, "confirmationStatus": "NONE"}
+        if slot_name != None:
+            request["intent"]["slots"] = {slot_name: {"name": slot_name, "value": slot_value, "confirmationStatus": "NONE"}}
+    con = {}
+    con["AudioPlayer"] = {"playerActivity": "IDLE"}
+    con["System"] = {"device": {"supportedInterfaces": {"AudioPlayer": {}}}, "application":{"applicationId": "amzn1.ask.skill.[unique-value-here]"}, "user":{"userId": "amzn1.ask.account.[unique-value-here]"}}
+    data = {"session": session, "version": "1.0", "request": request, "context": con}
 
-def createLaunchContext():
-    with open("samples\\launchrequest.json") as json_file:
-        data = json.load(json_file)
-        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=context.Context)
+    return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=request_envelope.RequestEnvelope), skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=context.Context)
 
-def createNewRecipeRequest():
-    with open("samples\\newreciperequest.json") as json_file:
-        data = json.load(json_file)
-        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=request_envelope.RequestEnvelope)
-
-def createNewRecipeContext():
-    with open("samples\\newreciperequest.json") as json_file:
-        data = json.load(json_file)
-        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=context.Context)
-
-def createNewRecipeProvidedRequest():
-    with open("samples\\newrecipeprovidedrequest.json") as json_file:
-        data = json.load(json_file)
-        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=request_envelope.RequestEnvelope)
-
-def createNewRecipeProvidedContext():
-    with open("samples\\newrecipeprovidedrequest.json") as json_file:
-        data = json.load(json_file)
-        return skill_obj.serializer.deserialize(payload=json.dumps(data), obj_type=context.Context)
 
 #TO do
 #getSsmlFromResponse

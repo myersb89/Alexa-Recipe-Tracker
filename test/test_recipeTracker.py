@@ -12,19 +12,16 @@ def test_hello():
     assert recipeTracker.hello() == 'hello world'
 
 def test_launch():
-    testinput = requestHelper.createLaunchRequest()
-    testcontext = requestHelper.createLaunchContext()
+    testinput, testcontext = requestHelper.requestBuilder("LaunchRequest")
     response = my_skill.invoke(testinput, testcontext)
     assert "Welcome to the Recipe Tracker" in response.to_str()
 
 def test_newRecipe():
-    testinput = requestHelper.createNewRecipeRequest()
-    testcontext = requestHelper.createNewRecipeContext()
+    testinput, testcontext = requestHelper.requestBuilder("IntentRequest", "NewRecipeIntent")
     response = my_skill.invoke(testinput,testcontext)
     assert "Ok, what should this recipe be called" in response.to_str()
 
 def test_newRecipeProvided():
-    testinput = requestHelper.createNewRecipeProvidedRequest()
-    testcontext = requestHelper.createNewRecipeProvidedContext()
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slot_name="recipe", slot_value="Mac and cheese")
     response = my_skill.invoke(testinput,testcontext)
     assert "has been created" in response.to_str()
