@@ -62,7 +62,15 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
         # check if we already have a recipe in the session. If yes, store to database before creating new.
         if SESSION_KEY in session_attr:
             persistence_attr = handler_input.attributes_manager.persistent_attributes
-            persistence_attr[PERSISTENCE_KEY] = session_attr[SESSION_KEY]
+            #there's already a recipe list for this user. add to the list otherwise create
+            if PERSISTENCE_KEY in persistence_attr:
+                existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+                existing_recipe_list.append(session_attr[SESSION_KEY])
+                persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
+            else:
+                new_recipe_list = [session_attr[SESSION_KEY]]
+                persistence_attr[PERSISTENCE_KEY] = new_recipe_list
+            #persistence_attr[PERSISTENCE_KEY] = session_attr[SESSION_KEY]
             handler_input.attributes_manager.save_persistent_attributes()
 
         # Get the recipe name provided from the slot. Create a recipe object and save to session.
