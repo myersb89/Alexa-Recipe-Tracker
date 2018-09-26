@@ -8,16 +8,13 @@ import requestHelper
 
 my_skill = recipeTracker.sb.create()
 
-def test_hello():
-    assert recipeTracker.hello() == 'hello world'
-
 def test_launch():
-    testinput, testcontext = requestHelper.requestBuilder("LaunchRequest")
+    testinput, testcontext = requestHelper.requestBuilder(request_type="LaunchRequest")
     response = my_skill.invoke(testinput, testcontext)
     assert "Welcome to the Recipe Tracker" in response.to_str()
 
 def test_newRecipe():
-    testinput, testcontext = requestHelper.requestBuilder("IntentRequest", "NewRecipeIntent")
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeIntent")
     response = my_skill.invoke(testinput,testcontext)
     assert "Ok, what should this recipe be called" in response.to_str()
 
@@ -25,3 +22,13 @@ def test_newRecipeProvided():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slot_name="recipe", slot_value="Mac and cheese")
     response = my_skill.invoke(testinput,testcontext)
     assert "has been created" in response.to_str()
+
+def test_newRecipeProvidedAlreadyExists():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slot_name="recipe", slot_value="Mac and cheese")
+    response = my_skill.invoke(testinput,testcontext)
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", attributes="Mac and cheese",
+                                                          intent_name="NewRecipeProvidedIntent", slot_name="recipe",
+                                                          slot_value="Mac and cheese")
+    print(testinput)
+    response = my_skill.invoke(testinput, testcontext)
+    assert "That recipe already exists" in response.to_str()

@@ -24,10 +24,6 @@ sb = StandardSkillBuilder(
     dynamodb_client=dynamodb
 )
 
-def hello():
-    test = "this is a test6"
-    return "hello world"
-
 class LaunchRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_request_type("LaunchRequest")(handler_input)
@@ -57,11 +53,29 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
         return is_intent_name("NewRecipeProvidedIntent")(handler_input)
 
     def handle(self, handler_input):
+        # Get the recipe name provided from the slot.
+        slots = handler_input.request_envelope.request.intent.slots
+        recipe_name = slots[RECIPE_SLOT].value
+
         session_attr = handler_input.attributes_manager.session_attributes
+        persistence_attr = handler_input.attributes_manager.persistent_attributes
+       #existing_recipe_list = None
+        cur_recipe = None
+
+        #set recipe list and current recipe if we have them
+        #if PERSISTENCE_KEY in persistence_attr:
+        #    existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+        if SESSION_KEY in session_attr:
+            cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
+        if cur_recipe != None and cur_recipe.title == recipe_name:
+            speech_text = "That recipe already exists."
+            handler_input.response_builder.speak(speech_text).set_card(
+                SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+                False)
+            return handler_input.response_builder.response
 
         # check if we already have a recipe in the session. If yes, store to database before creating new.
         if SESSION_KEY in session_attr:
-            persistence_attr = handler_input.attributes_manager.persistent_attributes
             #there's already a recipe list for this user. add to the list otherwise create
             if PERSISTENCE_KEY in persistence_attr:
                 existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
@@ -70,12 +84,9 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
             else:
                 new_recipe_list = [session_attr[SESSION_KEY]]
                 persistence_attr[PERSISTENCE_KEY] = new_recipe_list
-            #persistence_attr[PERSISTENCE_KEY] = session_attr[SESSION_KEY]
             handler_input.attributes_manager.save_persistent_attributes()
 
-        # Get the recipe name provided from the slot. Create a recipe object and save to session.
-        slots = handler_input.request_envelope.request.intent.slots
-        recipe_name = slots[RECIPE_SLOT].value
+        #save recipe to session as the current recipe
         session_attr[SESSION_KEY] = jsonpickle.encode(recipe(recipe_name))
 
         speech_text = "Recipe has been created. Say 'add ingredient' to add an ingredient to the recipe."

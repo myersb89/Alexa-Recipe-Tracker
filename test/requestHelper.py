@@ -6,12 +6,16 @@ import json
 sb = SkillBuilder()
 skill_obj = sb.create()
 
-def requestBuilder(request_type, intent_name = None, slot_name = None, slot_value = None, userid = "amzn1.ask.account.[unique-value-here]"):
+def requestBuilder(request_type, attributes = None, intent_name = None, slot_name = None, slot_value = None, userid = "amzn1.ask.account.[unique-value-here]"):
     #input: userid, request type, session attributes
     session = {}
     session["new"] = True
     session["sessionId"] = "amzn1.echo-api.session.[unique-value-here]"
-    session["attributes"] = {}
+    if attributes == None:
+        session["attributes"] = {}
+
+    else:
+        session["attributes"] = {"current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": []}, \"title\": \"Mac and cheese\"}"}
     session["user"] = {"userId": userid}
     request = {}
     request["locale"] = "en-US"
