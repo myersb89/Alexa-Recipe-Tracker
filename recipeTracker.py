@@ -3,16 +3,16 @@ from ask_sdk.standard import StandardSkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_core.utils import is_request_type, is_intent_name
-from ask_sdk_core.handler_input import HandlerInput
-from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
+from recipe import recipe, ingredient
 import ask_sdk_dynamodb
 import boto3
+import jsonpickle
 
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')  #, endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1') #, endpoint_url="http://localhost:8000")
 
 sb = StandardSkillBuilder(
     table_name=skill_persistence_table, auto_create_table=False,
@@ -40,9 +40,11 @@ class NewRecipeIntentHandler(AbstractRequestHandler):
         return is_intent_name("NewRecipeIntent")(handler_input)
 
     def handle(self, handler_input):
+        #Create new recipe object and save it to dynamodb.
         persistence_attr = handler_input.attributes_manager.persistent_attributes
-        persistence_attr['recipe'] = 'Beef Stew'
+        persistence_attr['recipe'] = jsonpickle.encode(recipe('Beef Stew'))
         handler_input.attributes_manager.save_persistent_attributes()
+
         speech_text = "Ok, what should this recipe be called?"
 
         handler_input.response_builder.speak(speech_text).set_card(
