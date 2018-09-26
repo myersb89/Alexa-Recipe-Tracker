@@ -31,5 +31,11 @@ pipeline {
                 }   
             }
         }
+        stage('Cleanup') { 
+            steps {
+                bat '''REM Remove recipeTracker.py from site-packages folder when done
+                    del  venv\\Lib\\site-packages\\recipeTracker.py'''
+            }
+        }
     }
 }
