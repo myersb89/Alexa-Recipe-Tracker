@@ -6,3 +6,7 @@ recipeTracker_env/
 
 #Ignore pycache
 __pycache__/
+
+#Database table initialization file
+initdb.py
+deletedb.py
