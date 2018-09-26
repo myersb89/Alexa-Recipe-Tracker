@@ -49,7 +49,7 @@ class NewRecipeIntentHandler(AbstractRequestHandler):
 
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
-            True)
+            False)
         return handler_input.response_builder.response
 
 class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
@@ -74,7 +74,7 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
 
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
-            True)
+            False)
         return handler_input.response_builder.response
 
 class HelpIntentHandler(AbstractRequestHandler):
