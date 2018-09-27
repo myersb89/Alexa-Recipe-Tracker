@@ -165,8 +165,8 @@ class LoadRecipeIntentHandler(AbstractRequestHandler):
                         cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
                         found = False
                         for inx, j in enumerate(existing_recipe_list):
-                            item = jsonpickle.decode(j)
-                            if item.title == cur_recipe.title:
+                            item2 = jsonpickle.decode(j)
+                            if item2.title == cur_recipe.title:
                                 existing_recipe_list[inx] = jsonpickle.encode(cur_recipe)
                                 found = True
                                 break
