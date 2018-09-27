@@ -222,8 +222,13 @@ class AddIngredientInProgressIntentHandler(AbstractRequestHandler):
                     prompt = "Okie Dokie, what ingredient would you like to add?"
                     return handler_input.response_builder.speak(
                         prompt).ask(prompt).add_directive(
-                        ElicitSlotDirective(slot_to_elicit=INGREDIENT_SLOT)
+                        ElicitSlotDirective(slot_to_elicit=slot_name)
                     ).response
+
+            return handler_input.response_builder.add_directive(
+                DelegateDirective(
+                    updated_intent=handler_input.request_envelope.request.intent
+                )).response
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
