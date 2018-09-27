@@ -12,7 +12,7 @@ import jsonpickle
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
 
 RECIPE_SLOT = 'recipe'
 SESSION_KEY = 'current_recipe'
@@ -134,7 +134,7 @@ class DeleteRecipeIntentHandler(AbstractRequestHandler):
             cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
             if cur_recipe.title == recipe_name:
                 handler_input.attributes_manager.session_attributes = {}
-                speech_text = recipe_name + "recipe has been deleted."
+                speech_text = recipe_name + " recipe has been deleted."
 
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
@@ -180,6 +180,29 @@ class LoadRecipeIntentHandler(AbstractRequestHandler):
                     speech_text = recipe_name + " recipe has been loaded."
                     break
 
+        handler_input.response_builder.speak(speech_text).set_card(
+            SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+            False)
+        return handler_input.response_builder.response
+
+class AddIngredientIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("AddIngredientIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # Get the recipe name provided from the slot.
+        #slots = handler_input.request_envelope.request.intent.slots
+        #recipe_name = slots[RECIPE_SLOT].value
+
+        session_attr = handler_input.attributes_manager.session_attributes
+        if SESSION_KEY not in session_attr:
+            speech_text = "You are not currently tracking a recipe. Say 'create recipe' to start tracking a new recipe or 'load recipe' to work on an existing recipe"
+            handler_input.response_builder.speak(speech_text).set_card(
+                SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+                False)
+            return handler_input.response_builder.response
+
+        speech_text = "Not implemented"
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
             False)
@@ -270,6 +293,7 @@ sb.add_request_handler(NewRecipeIntentHandler())
 sb.add_request_handler(NewRecipeProvidedIntentHandler())
 sb.add_request_handler(DeleteRecipeIntentHandler())
 sb.add_request_handler(LoadRecipeIntentHandler())
+sb.add_request_handler(AddIngredientIntentHandler())
 
 sb.add_exception_handler(AllExceptionHandler())
 

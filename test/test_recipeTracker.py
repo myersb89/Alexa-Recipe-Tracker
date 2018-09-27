@@ -83,11 +83,17 @@ def test_loadRecipeExists():
                                                           intent_name="LoadRecipeIntent", slot_name="recipe", slot_value="Fish Sticks")
     response = my_skill.invoke(testinput, testcontext)
     assert "recipe has been loaded" in response.to_str()
+
 def test_loadRecipeNotExists():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="LoadRecipeIntent", slot_name="recipe", slot_value="Peking Duck")
     response = my_skill.invoke(testinput, testcontext)
     assert "could not find" in response.to_str()
 
+def test_addIngredientRecipeNotLoaded():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", slot_name="ingredient", slot_value="sugar")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "not currently tracking" in response.to_str()
 
 #test_newRecipeProvidedAlreadyExistsInDb()
