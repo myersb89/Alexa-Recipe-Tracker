@@ -105,6 +105,42 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
             False)
         return handler_input.response_builder.response
 
+class DeleteRecipeIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("DeleteRecipeIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # Get the recipe name provided from the slot.
+        slots = handler_input.request_envelope.request.intent.slots
+        recipe_name = slots[RECIPE_SLOT].value
+        speech_text = "Sorry, I could not find a recipe called " + recipe_name
+
+        session_attr = handler_input.attributes_manager.session_attributes
+        persistence_attr = handler_input.attributes_manager.persistent_attributes
+
+        # delete from database
+        if PERSISTENCE_KEY in persistence_attr:
+            existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+            for i in existing_recipe_list:
+                item = jsonpickle.decode(i)
+                if item.title == recipe_name:
+                    existing_recipe_list.remove(i)
+                    speech_text = recipe_name + "recipe has been deleted."
+                    handler_input.attributes_manager.save_persistent_attributes()
+                    break
+
+        #delete from session
+        if SESSION_KEY in session_attr:
+            cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
+            if cur_recipe.title == recipe_name:
+                handler_input.attributes_manager.session_attributes = {}
+                speech_text = recipe_name + "recipe has been deleted."
+
+        handler_input.response_builder.speak(speech_text).set_card(
+            SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+            False)
+        return handler_input.response_builder.response
+
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("AMAZON.HelpIntent")(handler_input)
@@ -145,7 +181,18 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
         return is_request_type("SessionEndedRequest")(handler_input)
 
     def handle(self, handler_input):
-        #any cleanup logic goes here.
+        # save the recipe in session to database on exit
+        session_attr = handler_input.attributes_manager.session_attributes
+        if SESSION_KEY in session_attr:
+            persistence_attr = handler_input.attributes_manager.persistent_attributes
+            if PERSISTENCE_KEY in persistence_attr:
+                existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
+                existing_recipe_list.append(session_attr[SESSION_KEY])
+                persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
+            else:
+                new_recipe_list = [session_attr[SESSION_KEY]]
+                persistence_attr[PERSISTENCE_KEY] = new_recipe_list
+            handler_input.attributes_manager.save_persistent_attributes()
         return handler_input.response_builder.response
 
 class AllExceptionHandler(AbstractExceptionHandler):
@@ -168,6 +215,7 @@ sb.add_request_handler(SessionEndedRequestHandler())
 
 sb.add_request_handler(NewRecipeIntentHandler())
 sb.add_request_handler(NewRecipeProvidedIntentHandler())
+sb.add_request_handler(DeleteRecipeIntentHandler())
 
 sb.add_exception_handler(AllExceptionHandler())
 

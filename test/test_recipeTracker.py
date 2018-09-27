@@ -54,4 +54,25 @@ def test_newRecipeProvidedAlreadyExistsInDb():
     response = my_skill.invoke(testinput, testcontext)
     assert "That recipe already exists" in response.to_str()
 
+def test_deleteRecipeExistsInDb():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                              intent_name="AMAZON.StopIntent", attributes="Sphagetti")
+    response = my_skill.invoke(testinput, testcontext)
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="DeleteRecipeIntent", slot_name="recipe", slot_value="Sphagetti")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "recipe has been deleted" in response.to_str()
+
+def test_deleteRecipeExistsInSession():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="DeleteRecipeIntent", attributes="Pot Roast", slot_name="recipe", slot_value="Pot Roast")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "recipe has been deleted" in response.to_str()
+
+def test_deleteRecipeNotExists():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="DeleteRecipeIntent", slot_name="recipe", slot_value="Salmon")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "could not find" in response.to_str()
+
 #test_newRecipeProvidedAlreadyExistsInDb()
