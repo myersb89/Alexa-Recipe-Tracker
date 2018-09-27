@@ -6,7 +6,7 @@ import json
 sb = SkillBuilder()
 skill_obj = sb.create()
 
-def requestBuilder(request_type, attributes = None, intent_name = None, slot_name = None, slot_value = None, userid = "amzn1.ask.account.[unique-value-here]"):
+def requestBuilder(request_type, attributes = None, intent_name = None, slot_name = None, slot_value = None, dialog_state = None, userid = "amzn1.ask.account.[unique-value-here]"):
     #input: userid, request type, session attributes
     session = {}
     session["new"] = True
@@ -24,8 +24,13 @@ def requestBuilder(request_type, attributes = None, intent_name = None, slot_nam
     request["requestId"] = "amzn1.echo-api.request.[unique-value-here]"
     if intent_name != None:
         request["intent"] = {"name": intent_name, "confirmationStatus": "NONE"}
-        if slot_name != None:
+        if slot_name != None and slot_value != None:
             request["intent"]["slots"] = {slot_name: {"name": slot_name, "value": slot_value, "confirmationStatus": "NONE"}}
+        elif slot_name != None and slot_value == None:
+            request["intent"]["slots"] = {
+                slot_name: {"name": slot_name, "confirmationStatus": "NONE"}}
+    if dialog_state != None:
+        request["dialogState"] = dialog_state
     con = {}
     con["AudioPlayer"] = {"playerActivity": "IDLE"}
     con["System"] = {"device": {"supportedInterfaces": {"AudioPlayer": {}}}, "application":{"applicationId": "amzn1.ask.skill.[unique-value-here]"}, "user":{"userId": "amzn1.ask.account.[unique-value-here]"}}

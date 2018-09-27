@@ -4,6 +4,8 @@ from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_model.ui import SimpleCard
+from ask_sdk_model import DialogState
+from ask_sdk_model.dialog import (ElicitSlotDirective, DelegateDirective)
 from recipe import recipe, ingredient
 import ask_sdk_dynamodb
 import boto3
@@ -15,6 +17,7 @@ skill_persistence_table = 'recipedb'
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
 
 RECIPE_SLOT = 'recipe'
+INGREDIENT_SLOT = 'ingredient'
 SESSION_KEY = 'current_recipe'
 PERSISTENCE_KEY = 'recipe_list'
 
@@ -185,9 +188,9 @@ class LoadRecipeIntentHandler(AbstractRequestHandler):
             False)
         return handler_input.response_builder.response
 
-class AddIngredientIntentHandler(AbstractRequestHandler):
+class AddIngredientCompletedIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        return is_intent_name("AddIngredientIntent")(handler_input)
+        return (is_intent_name("AddIngredientIntent")(handler_input) and handler_input.request_envelope.request.dialog_state == DialogState.COMPLETED)
 
     def handle(self, handler_input):
         # Get the recipe name provided from the slot.
@@ -207,6 +210,20 @@ class AddIngredientIntentHandler(AbstractRequestHandler):
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
             False)
         return handler_input.response_builder.response
+
+class AddIngredientInProgressIntentHandler(AbstractRequestHandler):
+        def can_handle(self, handler_input):
+            return (is_intent_name("AddIngredientIntent")(handler_input) and handler_input.request_envelope.request.dialog_state != DialogState.COMPLETED)
+
+        def handle(self, handler_input):
+            slots = handler_input.request_envelope.request.intent.slots
+            for slot_name, current_slot in slots.items():
+                if current_slot.value == None:
+                    prompt = "Okie Dokie, what ingredient would you like to add?"
+                    return handler_input.response_builder.speak(
+                        prompt).ask(prompt).add_directive(
+                        ElicitSlotDirective(slot_to_elicit=INGREDIENT_SLOT)
+                    ).response
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -293,7 +310,8 @@ sb.add_request_handler(NewRecipeIntentHandler())
 sb.add_request_handler(NewRecipeProvidedIntentHandler())
 sb.add_request_handler(DeleteRecipeIntentHandler())
 sb.add_request_handler(LoadRecipeIntentHandler())
-sb.add_request_handler(AddIngredientIntentHandler())
+sb.add_request_handler(AddIngredientCompletedIntentHandler())
+sb.add_request_handler(AddIngredientInProgressIntentHandler())
 
 sb.add_exception_handler(AllExceptionHandler())
 
