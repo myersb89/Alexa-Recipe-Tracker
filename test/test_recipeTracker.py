@@ -75,4 +75,19 @@ def test_deleteRecipeNotExists():
     response = my_skill.invoke(testinput, testcontext)
     assert "could not find" in response.to_str()
 
+def test_loadRecipeExists():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AMAZON.StopIntent", attributes="Fish Sticks")
+    response = my_skill.invoke(testinput, testcontext)
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="LoadRecipeIntent", slot_name="recipe", slot_value="Fish Sticks")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "recipe has been loaded" in response.to_str()
+def test_loadRecipeNotExists():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="LoadRecipeIntent", slot_name="recipe", slot_value="Peking Duck")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "could not find" in response.to_str()
+
+
 #test_newRecipeProvidedAlreadyExistsInDb()
