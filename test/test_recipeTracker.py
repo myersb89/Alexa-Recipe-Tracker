@@ -13,6 +13,18 @@ def test_launch():
     response = my_skill.invoke(testinput, testcontext)
     assert "Welcome to the Recipe Tracker" in response.to_str()
 
+def test_sessionEnded():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="SessionEndedRequest")
+    response = my_skill.invoke(testinput, testcontext)
+    response_dict = response.to_dict()
+    assert response_dict["response"]["output_speech"] is None
+
+def test_sessionEndedWithSessionAttr():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="SessionEndedRequest",attributes="Scrambled Eggs")
+    response = my_skill.invoke(testinput, testcontext)
+    response_dict = response.to_dict()
+    assert response_dict["response"]["output_speech"] is None
+
 def test_newRecipe():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeIntent")
     response = my_skill.invoke(testinput,testcontext)
@@ -144,4 +156,4 @@ def test_addTwoIngredients():
     response2 = my_skill.invoke(testinput, testcontext)
     assert "has been added" in response1.to_str() and "has been added" in response2.to_str()
 
-
+test_sessionEndedWithSessionAttr()
