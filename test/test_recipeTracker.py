@@ -56,8 +56,7 @@ def test_newRecipeProvidedAlreadyExistsInSession():
     assert "That recipe already exists" in response.to_str()
 
 def test_newRecipeProvidedAlreadyExistsInDb():
-    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="AMAZON.StopIntent", attributes="Pizza")
+    testinput, testcontext = requestHelper.requestBuilder(request_type="SessionEndedRequest", attributes="Pizza")
     response = my_skill.invoke(testinput, testcontext)
     slots = requestHelper.slotBuilder({"recipe": "Pizza"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
@@ -66,8 +65,7 @@ def test_newRecipeProvidedAlreadyExistsInDb():
     assert "That recipe already exists" in response.to_str()
 
 def test_deleteRecipeExistsInDb():
-    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                              intent_name="AMAZON.StopIntent", attributes="Sphagetti")
+    testinput, testcontext = requestHelper.requestBuilder(request_type="SessionEndedRequest", attributes="Sphagetti")
     response = my_skill.invoke(testinput, testcontext)
     slots = requestHelper.slotBuilder({"recipe": "Sphagetti"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
@@ -90,8 +88,7 @@ def test_deleteRecipeNotExists():
     assert "could not find" in response.to_str()
 
 def test_loadRecipeExists():
-    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="AMAZON.StopIntent", attributes="Fish Sticks")
+    testinput, testcontext = requestHelper.requestBuilder(request_type="SessionEndedRequest", attributes="Fish Sticks")
     response = my_skill.invoke(testinput, testcontext)
     slots = requestHelper.slotBuilder({"recipe": "Fish Sticks"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
