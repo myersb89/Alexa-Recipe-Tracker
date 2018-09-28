@@ -14,7 +14,7 @@ import jsonpickle
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
 
 RECIPE_SLOT = 'recipe'
 INGREDIENT_SLOT = 'ingredient'
