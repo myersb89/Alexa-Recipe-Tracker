@@ -217,19 +217,32 @@ class AddIngredientInProgressIntentHandler(AbstractRequestHandler):
 
         def handle(self, handler_input):
             slots = handler_input.request_envelope.request.intent.slots
+            if 'ingredient' in slots.keys() and slots['ingredient'].value == None:
+                prompt = "Ok, what ingredient would you like to add?"
+                return handler_input.response_builder.speak(
+                    prompt).ask(prompt).add_directive(
+                    ElicitSlotDirective(slot_to_elicit='ingredient')
+                ).response
+            elif 'amount' in slots.keys() and slots['amount'].value == None:
+                prompt = "Ok, what amount should I add?"
+                return handler_input.response_builder.speak(
+                    prompt).ask(prompt).add_directive(
+                    ElicitSlotDirective(slot_to_elicit='amount')
+                ).response
+            '''
             for slot_name, current_slot in slots.items():
                 if slot_name == 'ingredient' and current_slot.value == None:
-                    prompt = "Okie Dokie, what ingredient would you like to add?"
+                    prompt = "Ok, what ingredient would you like to add?"
                     return handler_input.response_builder.speak(
                         prompt).ask(prompt).add_directive(
                         ElicitSlotDirective(slot_to_elicit=slot_name)
                     ).response
                 elif slot_name == 'amount' and current_slot.value == None:
-                    prompt = "Okie Dokie, what amount should I add?"
+                    prompt = "Ok, what amount should I add?"
                     return handler_input.response_builder.speak(
                         prompt).ask(prompt).add_directive(
                         ElicitSlotDirective(slot_to_elicit=slot_name)
-                    ).response
+                    ).response '''
 
             return handler_input.response_builder.add_directive(
                 DelegateDirective(

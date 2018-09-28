@@ -105,7 +105,7 @@ def test_addIngredientMissingIngredient():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
     response = my_skill.invoke(testinput, testcontext)
-    assert "would you like to add" in response.to_str()
+    assert "what ingredient would" in response.to_str()
 
 def test_addIngredientMissingAmount():
     slots = requestHelper.slotBuilder({"ingredient": "carrots", "amount": None})
@@ -128,4 +128,4 @@ def test_addIngredientAllSlots():
     response = my_skill.invoke(testinput, testcontext)
     assert "Not implemented" in response.to_str()
 
-test_addIngredientMissingMeasurement()
+#test_addIngredientMissingIngredient()
