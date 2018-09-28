@@ -132,4 +132,16 @@ def test_addIngredientAllSlots():
     response = my_skill.invoke(testinput, testcontext)
     assert "has been added" in response.to_str()
 
+def test_addTwoIngredients():
+    slots = requestHelper.slotBuilder({"ingredient": "cheese", "amount": "2", "measurement": "ounces"})
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", attributes="Fritata", slots=slots, dialog_state="COMPLETED")
+    response1 = my_skill.invoke(testinput, testcontext)
+    slots = requestHelper.slotBuilder({"ingredient": "eggs", "amount": "6", "measurement": None})
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", attributes="Fritata",
+                                                          slots=slots, dialog_state="COMPLETED")
+    response2 = my_skill.invoke(testinput, testcontext)
+    assert "has been added" in response1.to_str() and "has been added" in response2.to_str()
+
 
