@@ -267,6 +267,9 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.CancelIntent")(handler_input) or is_intent_name("AMAZON.StopIntent")(handler_input)
 
     def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        persistence_attr = handler_input.attributes_manager.persistent_attributes
+        saveSessionToDb(session_attr, persistence_attr, handler_input)
         speech_text = "Goodbye!"
 
         handler_input.response_builder.speak(speech_text).set_card(
