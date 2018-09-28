@@ -218,8 +218,14 @@ class AddIngredientInProgressIntentHandler(AbstractRequestHandler):
         def handle(self, handler_input):
             slots = handler_input.request_envelope.request.intent.slots
             for slot_name, current_slot in slots.items():
-                if current_slot.value == None:
+                if slot_name == 'ingredient' and current_slot.value == None:
                     prompt = "Okie Dokie, what ingredient would you like to add?"
+                    return handler_input.response_builder.speak(
+                        prompt).ask(prompt).add_directive(
+                        ElicitSlotDirective(slot_to_elicit=slot_name)
+                    ).response
+                elif slot_name == 'amount' and current_slot.value == None:
+                    prompt = "Okie Dokie, what amount should I add?"
                     return handler_input.response_builder.speak(
                         prompt).ask(prompt).add_directive(
                         ElicitSlotDirective(slot_to_elicit=slot_name)

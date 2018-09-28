@@ -19,7 +19,8 @@ def test_newRecipe():
     assert "Ok, what should this recipe be called" in response.to_str()
 
 def test_newRecipeProvided():
-    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slot_name="recipe", slot_value="Mac and cheese")
+    slots = requestHelper.slotBuilder({"recipe": "Mac and cheese"})
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slots=slots)
     response = my_skill.invoke(testinput,testcontext)
     assert "has been created" in response.to_str()
 
@@ -36,11 +37,9 @@ def test_stopWithSession():
     assert "Goodbye" in response.to_str()
 
 def test_newRecipeProvidedAlreadyExistsInSession():
-    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", intent_name="NewRecipeProvidedIntent", slot_name="recipe", slot_value="Mac and cheese")
-    response = my_skill.invoke(testinput,testcontext)
+    slots = requestHelper.slotBuilder({"recipe": "Mac and cheese"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest", attributes="Mac and cheese",
-                                                          intent_name="NewRecipeProvidedIntent", slot_name="recipe",
-                                                          slot_value="Mac and cheese")
+                                                          intent_name="NewRecipeProvidedIntent", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "That recipe already exists" in response.to_str()
 
@@ -48,9 +47,9 @@ def test_newRecipeProvidedAlreadyExistsInDb():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AMAZON.StopIntent", attributes="Pizza")
     response = my_skill.invoke(testinput, testcontext)
+    slots = requestHelper.slotBuilder({"recipe": "Pizza"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="NewRecipeProvidedIntent", slot_name="recipe",
-                                                          slot_value="Pizza")
+                                                          intent_name="NewRecipeProvidedIntent", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "That recipe already exists" in response.to_str()
 
@@ -58,20 +57,23 @@ def test_deleteRecipeExistsInDb():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                               intent_name="AMAZON.StopIntent", attributes="Sphagetti")
     response = my_skill.invoke(testinput, testcontext)
+    slots = requestHelper.slotBuilder({"recipe": "Sphagetti"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="DeleteRecipeIntent", slot_name="recipe", slot_value="Sphagetti")
+                                                          intent_name="DeleteRecipeIntent", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "recipe has been deleted" in response.to_str()
 
 def test_deleteRecipeExistsInSession():
+    slots = requestHelper.slotBuilder({"recipe": "Pot Roast"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="DeleteRecipeIntent", attributes="Pot Roast", slot_name="recipe", slot_value="Pot Roast")
+                                                          intent_name="DeleteRecipeIntent", attributes="Pot Roast", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "recipe has been deleted" in response.to_str()
 
 def test_deleteRecipeNotExists():
+    slots = requestHelper.slotBuilder({"recipe": "Salmon"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="DeleteRecipeIntent", slot_name="recipe", slot_value="Salmon")
+                                                          intent_name="DeleteRecipeIntent", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "could not find" in response.to_str()
 
@@ -79,14 +81,16 @@ def test_loadRecipeExists():
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AMAZON.StopIntent", attributes="Fish Sticks")
     response = my_skill.invoke(testinput, testcontext)
+    slots = requestHelper.slotBuilder({"recipe": "Fish Sticks"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="LoadRecipeIntent", slot_name="recipe", slot_value="Fish Sticks")
+                                                          intent_name="LoadRecipeIntent", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "recipe has been loaded" in response.to_str()
 
 def test_loadRecipeNotExists():
+    slots = requestHelper.slotBuilder({"recipe": "Peking Duck"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="LoadRecipeIntent", slot_name="recipe", slot_value="Peking Duck")
+                                                          intent_name="LoadRecipeIntent", slots=slots)
     response = my_skill.invoke(testinput, testcontext)
     assert "could not find" in response.to_str()
 
@@ -97,9 +101,31 @@ def test_addIngredientRecipeNotLoaded():
     assert "not currently tracking" in response.to_str()
 
 def test_addIngredientMissingIngredient():
+    slots = requestHelper.slotBuilder({"ingredient": None})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="AddIngredientIntent", slot_name="ingredient", dialog_state="STARTED")
+                                                          intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
     response = my_skill.invoke(testinput, testcontext)
     assert "would you like to add" in response.to_str()
 
-#test_addIngredientMissingIngredient()
+def test_addIngredientMissingAmount():
+    slots = requestHelper.slotBuilder({"ingredient": "carrots", "amount": None})
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "what amount " in response.to_str()
+
+def test_addIngredientMissingMeasurement():
+    slots = requestHelper.slotBuilder({"ingredient": "beans", "amount": "one", "measurement": None})
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "Not implemented " in response.to_str()
+
+def test_addIngredientAllSlots():
+    slots = requestHelper.slotBuilder({"ingredient": "potato", "amount": "2", "measurement": "pounds"})
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", attributes="Pot Roast", slots=slots, dialog_state="COMPLETED")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "Not implemented" in response.to_str()
+
+test_addIngredientMissingMeasurement()
