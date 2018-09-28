@@ -101,14 +101,14 @@ def test_addIngredientRecipeNotLoaded():
     assert "not currently tracking" in response.to_str()
 
 def test_addIngredientMissingIngredient():
-    slots = requestHelper.slotBuilder({"ingredient": None})
+    slots = requestHelper.slotBuilder({"ingredient": None,"amount": None, "measurement": None})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
     response = my_skill.invoke(testinput, testcontext)
     assert "what ingredient would" in response.to_str()
 
 def test_addIngredientMissingAmount():
-    slots = requestHelper.slotBuilder({"ingredient": "carrots", "amount": None})
+    slots = requestHelper.slotBuilder({"ingredient": "carrots", "amount": None, "measurement": None})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
     response = my_skill.invoke(testinput, testcontext)
@@ -118,14 +118,18 @@ def test_addIngredientMissingMeasurement():
     slots = requestHelper.slotBuilder({"ingredient": "beans", "amount": "one", "measurement": None})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AddIngredientIntent", slots=slots, dialog_state="STARTED")
-    response = my_skill.invoke(testinput, testcontext)
-    assert "Not implemented " in response.to_str()
+    response1 = my_skill.invoke(testinput, testcontext)
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="AddIngredientIntent", attributes="Jello", slots=slots,
+                                                          dialog_state="COMPLETED")
+    response2 = my_skill.invoke(testinput, testcontext)
+    assert "Dialog.Delegate" in response1.to_str() and "has been added" in response2.to_str()
 
 def test_addIngredientAllSlots():
     slots = requestHelper.slotBuilder({"ingredient": "potato", "amount": "2", "measurement": "pounds"})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
                                                           intent_name="AddIngredientIntent", attributes="Pot Roast", slots=slots, dialog_state="COMPLETED")
     response = my_skill.invoke(testinput, testcontext)
-    assert "Not implemented" in response.to_str()
+    assert "has been added" in response.to_str()
 
-#test_addIngredientMissingIngredient()
+

@@ -205,7 +205,14 @@ class AddIngredientCompletedIntentHandler(AbstractRequestHandler):
                 False)
             return handler_input.response_builder.response
 
-        speech_text = "Not implemented"
+        #at this point I should have values for all my slots
+        slots = handler_input.request_envelope.request.intent.slots
+        new_ingredient = ingredient(item=slots['ingredient'].value, amount=slots['amount'].value, measurement=slots['measurement'].value)
+        cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
+        cur_recipe.addIngredient(new_ingredient)
+        handler_input.attributes_manager.session_attributes = jsonpickle.encode(cur_recipe)
+
+        speech_text = str(new_ingredient) + " has been added to " + cur_recipe.title
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
             False)
@@ -229,20 +236,6 @@ class AddIngredientInProgressIntentHandler(AbstractRequestHandler):
                     prompt).ask(prompt).add_directive(
                     ElicitSlotDirective(slot_to_elicit='amount')
                 ).response
-            '''
-            for slot_name, current_slot in slots.items():
-                if slot_name == 'ingredient' and current_slot.value == None:
-                    prompt = "Ok, what ingredient would you like to add?"
-                    return handler_input.response_builder.speak(
-                        prompt).ask(prompt).add_directive(
-                        ElicitSlotDirective(slot_to_elicit=slot_name)
-                    ).response
-                elif slot_name == 'amount' and current_slot.value == None:
-                    prompt = "Ok, what amount should I add?"
-                    return handler_input.response_builder.speak(
-                        prompt).ask(prompt).add_directive(
-                        ElicitSlotDirective(slot_to_elicit=slot_name)
-                    ).response '''
 
             return handler_input.response_builder.add_directive(
                 DelegateDirective(
