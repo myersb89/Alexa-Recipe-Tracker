@@ -306,8 +306,15 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
             persistence_attr = handler_input.attributes_manager.persistent_attributes
             if PERSISTENCE_KEY in persistence_attr:
                 existing_recipe_list = persistence_attr[PERSISTENCE_KEY]
-                existing_recipe_list.append(session_attr[SESSION_KEY])
-                persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
+                found = False
+                for inx, i in enumerate(existing_recipe_list):
+                    item = jsonpickle.decode(i)
+                    if item.title == cur_recipe.title:
+                        existing_recipe_list[inx] = jsonpickle.encode(cur_recipe)
+                        found = True
+                if found == False:
+                    existing_recipe_list.append(session_attr[SESSION_KEY])
+                    persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
             else:
                 new_recipe_list = [session_attr[SESSION_KEY]]
                 persistence_attr[PERSISTENCE_KEY] = new_recipe_list
