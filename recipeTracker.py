@@ -210,7 +210,8 @@ class AddIngredientCompletedIntentHandler(AbstractRequestHandler):
         new_ingredient = ingredient(item=slots['ingredient'].value, amount=slots['amount'].value, measurement=slots['measurement'].value)
         cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
         cur_recipe.addIngredient(new_ingredient)
-        handler_input.attributes_manager.session_attributes = jsonpickle.encode(cur_recipe)
+        session_attr[SESSION_KEY] = jsonpickle.encode(cur_recipe)
+        handler_input.attributes_manager.session_attributes = session_attr
 
         speech_text = str(new_ingredient) + " has been added to " + cur_recipe.title
         handler_input.response_builder.speak(speech_text).set_card(
