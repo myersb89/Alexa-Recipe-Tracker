@@ -14,7 +14,7 @@ import jsonpickle
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
 
 RECIPE_SLOT = 'recipe'
 INGREDIENT_SLOT = 'ingredient'
@@ -172,6 +172,8 @@ class LoadRecipeIntentHandler(AbstractRequestHandler):
                 item = jsonpickle.decode(i)
                 if item.title == recipe_name:
                     ##If we find the recipe to load in the db, Save current session to db
+                    saveSessionToDb(session_attr, persistence_attr, handler_input)
+                    '''
                     if SESSION_KEY in session_attr:
                         cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
                         found = False
@@ -185,7 +187,7 @@ class LoadRecipeIntentHandler(AbstractRequestHandler):
                             existing_recipe_list.append(session_attr[SESSION_KEY])
                             persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
                         handler_input.attributes_manager.save_persistent_attributes()
-
+                        '''
                     #load recipe it into the session
                     session_attr[SESSION_KEY] = jsonpickle.encode(item)
                     speech_text = recipe_name + " recipe has been loaded."
