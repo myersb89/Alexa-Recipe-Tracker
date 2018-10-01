@@ -89,6 +89,8 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
                 return handler_input.response_builder.response
             #if it's not, save current recipe to database
             else:
+                saveSessionToDb(session_attr, persistence_attr, handler_input)
+                '''
                 # there's already a recipe list for this user. add to the list otherwise create
                 if PERSISTENCE_KEY in persistence_attr:
                     #check if recipe from session is already in db
@@ -103,7 +105,7 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
                         persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
                 else:
                     new_recipe_list = [session_attr[SESSION_KEY]]
-                    persistence_attr[PERSISTENCE_KEY] = new_recipe_list
+                    persistence_attr[PERSISTENCE_KEY] = new_recipe_list '''
                 handler_input.attributes_manager.save_persistent_attributes()
 
         #save recipe to session as the current recipe
@@ -173,21 +175,7 @@ class LoadRecipeIntentHandler(AbstractRequestHandler):
                 if item.title == recipe_name:
                     ##If we find the recipe to load in the db, Save current session to db
                     saveSessionToDb(session_attr, persistence_attr, handler_input)
-                    '''
-                    if SESSION_KEY in session_attr:
-                        cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
-                        found = False
-                        for inx, j in enumerate(existing_recipe_list):
-                            item2 = jsonpickle.decode(j)
-                            if item2.title == cur_recipe.title:
-                                existing_recipe_list[inx] = jsonpickle.encode(cur_recipe)
-                                found = True
-                                break
-                        if found == False:
-                            existing_recipe_list.append(session_attr[SESSION_KEY])
-                            persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
-                        handler_input.attributes_manager.save_persistent_attributes()
-                        '''
+
                     #load recipe it into the session
                     session_attr[SESSION_KEY] = jsonpickle.encode(item)
                     speech_text = recipe_name + " recipe has been loaded."
