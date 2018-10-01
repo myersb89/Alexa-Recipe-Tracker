@@ -104,8 +104,9 @@ def test_loadRecipeNotExists():
     assert "could not find" in response.to_str()
 
 def test_addIngredientRecipeNotLoaded():
+    slots = requestHelper.slotBuilder({"ingredient": "sugar", "amount": None, "measurement": None})
     testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
-                                                          intent_name="AddIngredientIntent", slot_name="ingredient", slot_value="sugar", dialog_state="COMPLETED")
+                                                          intent_name="AddIngredientIntent", slots=slots, dialog_state="COMPLETED")
     response = my_skill.invoke(testinput, testcontext)
     assert "not currently tracking" in response.to_str()
 
@@ -153,4 +154,16 @@ def test_addTwoIngredients():
     response2 = my_skill.invoke(testinput, testcontext)
     assert "has been added" in response1.to_str() and "has been added" in response2.to_str()
 
-test_sessionEndedWithSessionAttr()
+def test_readRecipeProvidedNoIngredients():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="ReadRecipeIntent", attributes="Pot Roast")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "This recipe has no ingredients" in response.to_str()
+
+def test_readRecipeProvidedWithIngredients():
+    testinput, testcontext = requestHelper.requestBuilder(request_type="IntentRequest",
+                                                          intent_name="ReadRecipeIntent", ingredient="carrot", attributes="Pot Roast")
+    response = my_skill.invoke(testinput, testcontext)
+    assert "pounds carrot" in response.to_str()
+
+#test_readRecipeProvidedWithIngredients()

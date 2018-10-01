@@ -6,7 +6,7 @@ import json
 sb = SkillBuilder()
 skill_obj = sb.create()
 
-def requestBuilder(request_type, attributes = None, intent_name = None, slots = None, slot_name = None, slot_value = None, dialog_state = None, userid = "amzn1.ask.account.[unique-value-here]"):
+def requestBuilder(request_type, attributes = None, intent_name = None, slots = None, ingredient = None, dialog_state = None, userid = "amzn1.ask.account.[unique-value-here]"):
     #input: userid, request type, session attributes
     session = {}
     session["new"] = True
@@ -15,7 +15,12 @@ def requestBuilder(request_type, attributes = None, intent_name = None, slots = 
         session["attributes"] = {}
 
     else:
-        session["attributes"] = {"current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": []}, \"title\": \"" + attributes + "\"}"}
+        if ingredient == None:
+            session["attributes"] = {"current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": []}, \"title\": \"" + attributes + "\"}"}
+        else:
+            session["attributes"] = {
+                "current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": [{\"py/object\": \"recipe.ingredient\", \"amount\": \"2\", \"item\": \"" + ingredient + "\", \"measurement\": \"pounds\"}]}, \"title\": \"" + attributes + "\"}"}
+            '''"current_recipe": "{\"py/object\": \"recipe.recipe\", \"directions\": [], \"ingredients\": {\"py/set\": [{\"py/object\": \"recipe.ingredient\", \"amount\": \"2\", \"item\": \"potatoes\", \"measurement\": null}, {\"py/object\": \"recipe.ingredient\", \"amount\": \"2\", \"item\": \"mustard\", \"measurement\": \"grams\"}]}, \"title\": \"potato salad\"}"'''
     session["user"] = {"userId": userid}
     request = {}
     request["locale"] = "en-US"
@@ -53,6 +58,9 @@ def slotBuilder(names):
         else:
             slots[name] = {"name": name, "confirmationStatus": "NONE"}
     return slots
+
+def sessionAttrBuilder():
+    return
 
 #TO do
 #getSsmlFromResponse

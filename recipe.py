@@ -12,6 +12,16 @@ class recipe:
     def __repr__(self):
         return self.title
 
+    def __str__(self):
+        output = []
+        output.append(self.title + ". ")
+        if len(self.ingredients) != 0:
+            for ingredient in self.ingredients:
+                output.append(repr(ingredient) + ". ")
+        else:
+            output.append("This recipe has no ingredients listed.")
+        return "".join(output)
+
     def addIngredient(self, ingredient):
         self.ingredients.add(ingredient)
 

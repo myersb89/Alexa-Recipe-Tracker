@@ -14,7 +14,7 @@ import jsonpickle
 #point at local dynamodb
 #skill_persistence_table = os.environ["skill_persistence_table"]
 skill_persistence_table = 'recipedb'
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')#, endpoint_url="http://localhost:8000")
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
 
 RECIPE_SLOT = 'recipe'
 INGREDIENT_SLOT = 'ingredient'
@@ -90,23 +90,6 @@ class NewRecipeProvidedIntentHandler(AbstractRequestHandler):
             #if it's not, save current recipe to database
             else:
                 saveSessionToDb(session_attr, persistence_attr, handler_input)
-                '''
-                # there's already a recipe list for this user. add to the list otherwise create
-                if PERSISTENCE_KEY in persistence_attr:
-                    #check if recipe from session is already in db
-                    found = False
-                    for inx, i in enumerate(existing_recipe_list):
-                        item = jsonpickle.decode(i)
-                        if item.title == cur_recipe.title:
-                            existing_recipe_list[inx] = jsonpickle.encode(cur_recipe)
-                            found = True
-                    if found == False:
-                        existing_recipe_list.append(session_attr[SESSION_KEY])
-                        persistence_attr[PERSISTENCE_KEY] = existing_recipe_list
-                else:
-                    new_recipe_list = [session_attr[SESSION_KEY]]
-                    persistence_attr[PERSISTENCE_KEY] = new_recipe_list '''
-                handler_input.attributes_manager.save_persistent_attributes()
 
         #save recipe to session as the current recipe
         session_attr[SESSION_KEY] = jsonpickle.encode(recipe(recipe_name))
@@ -241,6 +224,27 @@ class AddIngredientInProgressIntentHandler(AbstractRequestHandler):
                     updated_intent=handler_input.request_envelope.request.intent
                 )).response
 
+
+class ReadRecipeIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("ReadRecipeIntent")(handler_input)
+
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        if SESSION_KEY not in session_attr:
+            speech_text = "You are not currently tracking a recipe. Say 'create recipe' to start tracking a new recipe or 'load recipe' to work on an existing recipe"
+            handler_input.response_builder.speak(speech_text).set_card(
+                SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+                False)
+            return handler_input.response_builder.response
+        else:
+            cur_recipe = jsonpickle.decode(session_attr[SESSION_KEY])
+            speech_text = str(cur_recipe)
+            handler_input.response_builder.speak(speech_text).set_card(
+                SimpleCard("Recipe Tracker", speech_text)).set_should_end_session(
+                False)
+            return handler_input.response_builder.response
+
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_intent_name("AMAZON.HelpIntent")(handler_input)
@@ -320,6 +324,7 @@ sb.add_request_handler(DeleteRecipeIntentHandler())
 sb.add_request_handler(LoadRecipeIntentHandler())
 sb.add_request_handler(AddIngredientCompletedIntentHandler())
 sb.add_request_handler(AddIngredientInProgressIntentHandler())
+sb.add_request_handler(ReadRecipeIntentHandler())
 
 sb.add_exception_handler(AllExceptionHandler())
 
